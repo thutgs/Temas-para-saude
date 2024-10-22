@@ -1,16 +1,14 @@
 ---
-title: "Relatório"
-format: pdf
+title: "Relatório Temas para a Saúde"
+format: html
 editor: visual
 ---
 
-```{r}
-options(java.parameters = c("-XX:+UseConcMarkSweepGC", "-Xmx8192m"))
-```
 
 ```{r}
+options(scipen = 999)
 library(pacman)
-p_load(readxl, openxlsx, tidyverse, dplyr, reshape2)
+p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra)
 ```
 
 ```{r}
@@ -22,7 +20,7 @@ anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
 ```{r}
 anos <- left_join(anos_1, select(anos_2, c(2,4,5,6,7)), by = "Ibge")
 anos[is.na(anos)] <- 0
-head(anos)
+kable(head(anos))
 ```
 
 ```{r}
@@ -33,7 +31,7 @@ melted_anos <- (melt(anos, id = c("Uf", "Ibge", "Municipio"), variable.name = "A
 temas$Ibge <- as.numeric(temas$Ibge)
 temas$Ano <- as.factor(temas$Ano)
 temas_atualizado <- left_join(temas, select(melted_anos, c(2,4,5)), by = c("Ibge", "Ano"))
-head(temas_atualizado)
+kable(head(temas_atualizado))
 ```
 
 ```{r}
@@ -60,10 +58,8 @@ colnames(banco)[8] <- "Ações de combate ao Aedes aegy"
 
 De acordo com os dados disponíveis, calcularemos os 15 indicadores para cada observação do banco (`r count(banco)` observações), totalizando então `r 15*count(banco)` indicadores.
 
-dúvida: deixamos os valores em frequência relativa ou porcentagem?
 
 ```{r}
-options(scipen = 999)
 banco %>% 
   mutate(
     agravo_indicador = `Agravos negligenciados`/Populacao,
@@ -87,6 +83,7 @@ banco %>%
 
 ```{r}
 indicadores <- select(banco, c(1:4, 21:36))
+kable(head(indicadores))
 ```
 
 ```{r}
