@@ -11,6 +11,10 @@ p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra)
 ```
 
 ```{r}
+1+1
+```
+
+```{r}
 temas <- read_excel("Temas para Saúde.xlsx", sheet = 1)
 anos_1 <- read_excel("Temas para Saúde.xlsx", sheet = 2)
 anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
@@ -111,4 +115,3 @@ banco %>%
             mediana = median(agravo_indicador*10000),
             `desvio padrão` = sd(agravo_indicador*10000))
 ```
-
