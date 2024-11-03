@@ -1,5 +1,5 @@
 ---
-title: "Relatório Temas para a Saúde"
+title: "Relatório"
 format: html
 editor: visual
 ---
@@ -44,7 +44,11 @@ temas_atualizado <- temas_atualizado %>%
   ))
 ```
 
+
+
 # Indicadores
+
+
 
 ```{r}
 banco <- temas_atualizado %>% 
@@ -55,7 +59,12 @@ banco <- temas_atualizado %>%
 colnames(banco)[8] <- "Ações de combate ao Aedes aegy"
 ```
 
+
+
 De acordo com os dados disponíveis, calcularemos os 15 indicadores para cada observação do banco (`r count(banco)` observações), totalizando então `r 15*count(banco)` indicadores.
+
+
+
 
 ```{r}
 banco %>% 
@@ -88,27 +97,5 @@ kable(head(indicadores))
 abas <- list("sheet1" = temas_atualizado, "sheet2" = indicadores)
 write.xlsx (abas, "temas_para_saude.xlsx")
 
-```
-
-## Análise descritiva
-
-```{r}
-ggplot(banco) +
-  aes(x = Ano, y = log(agravo_indicador*10000)) +
-  geom_boxplot(fill = c("dark blue"), width = 0.5) +
-  stat_summary(
-    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
-  ) +
-  labs(x = "Ano", y = "Transformação logarítimica Indicador de \nagravos neglicenciados por 10.000 habitantes") +
-  theme_light()
-```
-
-```{r}
-banco %>%
-  na.omit() %>% 
-  group_by(Ano) %>% 
-  summarise(média = mean(agravo_indicador*10000), 
-            mediana = median(agravo_indicador*10000),
-            `desvio padrão` = sd(agravo_indicador*10000))
 ```
 
