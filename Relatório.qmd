@@ -7,7 +7,7 @@ editor: visual
 ```{r}
 options(scipen = 999)
 library(pacman)
-p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra)
+p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments)
 ```
 
 ```{r}
@@ -15,6 +15,7 @@ temas <- read_excel("Temas para Saúde.xlsx", sheet = 1)
 anos_1 <- read_excel("Temas para Saúde.xlsx", sheet = 2)
 anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
 ```
+
 
 ```{r}
 anos <- left_join(anos_1, select(anos_2, c(2,4,5,6,7)), by = "Ibge")
@@ -79,6 +80,7 @@ banco %>%
     ) -> banco
 ```
 
+
 ```{r}
 indicadores <- select(banco, c(1:4, 21:36))
 kable(head(indicadores))
@@ -94,12 +96,24 @@ write.xlsx (abas, "temas_para_saude.xlsx")
 
 ```{r}
 ggplot(banco) +
-  aes(x = Ano, y = log(agravo_indicador*10000)) +
+  aes(x = Ano, y = agravo_indicador*100000) +
   geom_boxplot(fill = c("dark blue"), width = 0.5) +
   stat_summary(
     fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Indicador de agravos neglicenciados\n por 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = Ano, y = agravo_indicador*100000) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
   ) +
-  labs(x = "Ano", y = "Transformação logarítimica Indicador de \nagravos neglicenciados por 10.000 habitantes") +
+  coord_cartesian(ylim=c(0, 200))+
+  labs(x = "Ano", y = "Indicador de agravos neglicenciados\n por 100.000 habitantes") +
   theme_light()
 ```
 
@@ -107,8 +121,25 @@ ggplot(banco) +
 banco %>%
   na.omit() %>% 
   group_by(Ano) %>% 
-  summarise(média = mean(agravo_indicador*10000), 
-            mediana = median(agravo_indicador*10000),
-            `desvio padrão` = sd(agravo_indicador*10000))
+  summarise(média = mean(agravo_indicador*100000),
+            `desvio padrão` = sd(agravo_indicador*100000),
+            máximo = max(agravo_indicador*100000),
+            `1_quartil` = quantile(agravo_indicador*100000, .25),
+            mediana = median(agravo_indicador*100000),
+            `3_quartil` = quantile(agravo_indicador*100000, .75),
+            assimetria = skewness(agravo_indicador*100000),
+            curtose = kurtosis(agravo_indicador*100000)) 
 ```
+
+```{r}
+banco %>%
+  na.omit(agravo_indicador) %>% 
+  group_by(Uf) %>% 
+  summarise(`Média de agravo` = mean(agravo_indicador*100000)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de agravo por 100.000 habitantes")
+```
+
+
 
