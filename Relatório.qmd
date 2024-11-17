@@ -1,145 +1,606 @@
 ---
 title: "Relatório Temas para a Saúde"
-format: html
+format: pdf
 editor: visual
+execute: 
+  echo: false
 ---
 
 ```{r}
 options(scipen = 999)
 library(pacman)
-p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments)
+p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments, glue)
 ```
 
 ```{r}
-temas <- read_excel("Temas para Saúde.xlsx", sheet = 1)
-anos_1 <- read_excel("Temas para Saúde.xlsx", sheet = 2)
-anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
-```
-
-
-```{r}
-anos <- left_join(anos_1, select(anos_2, c(2,4,5,6,7)), by = "Ibge")
-anos[is.na(anos)] <- 0
-kable(head(anos))
+banco <- read_rds("dados/temas.rds")
+indicadores <- read_rds("dados/indicadores.rds")
 ```
 
 ```{r}
-melted_anos <- (melt(anos, id = c("Uf", "Ibge", "Municipio"), variable.name = "Ano", value.name = "Populacao"))
+quadro <- function(x){
+  banco %>% 
+    group_by(ano) %>% 
+     summarise(média = mean({{x}}),
+            `desvio padrão` = sd({{x}}),
+            máximo = max({{x}}),
+            `1_quartil` = quantile({{x}}, .25),
+            mediana = median({{x}}),
+            `3_quartil` = quantile({{x}}, .75),
+            assimetria = skewness({{x}}),
+            curtose = kurtosis({{x}})) %>% 
+    kable(caption = "Quadro de medidas resumo", format = "simple", digits = 3)
+}
 ```
 
-```{r}
-temas$Ibge <- as.numeric(temas$Ibge)
-temas$Ano <- as.factor(temas$Ano)
-temas_atualizado <- left_join(temas, select(melted_anos, c(2,4,5)), by = c("Ibge", "Ano"))
-kable(head(temas_atualizado))
-```
+# Análise Exploratória e descritiva
+
+## Agravos negligenciados
 
 ```{r}
-temas_atualizado <- temas_atualizado %>% 
-  mutate(Regiao = case_when(
-    Uf %in% c("AP", "AM", "RR", "PA", "TO", "RO", "AC") ~ "Norte",
-    Uf %in% c("MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA") ~ "Nordeste",
-    Uf %in% c("DF", "MT", "MS", "GO") ~ "Centro-oeste",
-    Uf %in% c("SP", "RJ", "ES", "MG") ~ "Sudeste",
-    Uf %in% c("SC", "RS", "PR") ~ "Sul"
-  ))
-```
+par(mfrow = c(1,2))
 
-# Indicadores
-
-```{r}
-banco <- temas_atualizado %>% 
-  mutate_at(c(5:19), as.numeric)  
-```
-
-```{r}
-colnames(banco)[8] <- "Ações de combate ao Aedes aegy"
-```
-
-De acordo com os dados disponíveis, calcularemos os 15 indicadores para cada observação do banco (`r count(banco)` observações), totalizando então `r 15*count(banco)` indicadores.
-
-```{r}
-banco %>% 
-  mutate(
-    agravo_indicador = `Agravos negligenciados`/Populacao,
-    alimentacao_indicador = `Alimentação saudável`/Populacao,
-    autocuidado_indicador = `Autocuidado de pessoas com doe`/Populacao,
-    acoes_indicador = `Ações de combate ao Aedes aegy`/Populacao,
-    cidadania_indicador = `Cidadania e direitos humanos`/Populacao,
-    dependencia_indicador = `Dependência química / tabaco /`/Populacao,
-    envelhecimento_indicador = `Envelhecimento / Climatério /`/Populacao,
-    plantas_indicador = `Plantas medicinais / fitoterap`/Populacao,
-    prevencao_indicador = `Prevenção da violência e promo`/Populacao,
-    ambiental_indicador = `Saúde ambiental`/Populacao,
-    bucal_indicador = `Saúde bucal`/Populacao,
-    trabalhador_indicador = `Saúde do trabalhador`/Populacao,
-    mental_indicador = `Saúde mental`/Populacao,
-    sexual_indicador = `Saúde sexual e reprodutiva`/Populacao,
-    semana_saude_indicador = `Semana saúde na escola`/Populacao
-    
-    ) -> banco
-```
-
-
-```{r}
-indicadores <- select(banco, c(1:4, 21:36))
-kable(head(indicadores))
-```
-
-```{r}
-abas <- list("sheet1" = temas_atualizado, "sheet2" = indicadores)
-write.xlsx (abas, "temas_para_saude.xlsx")
-
-```
-
-## Análise descritiva
-
-```{r}
 ggplot(banco) +
-  aes(x = Ano, y = agravo_indicador*100000) +
+  aes(x = ano, y = agravo_indicador) +
   geom_boxplot(fill = c("dark blue"), width = 0.5) +
   stat_summary(
     fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
   )+
-  labs(x = "Ano", y = "Indicador de agravos neglicenciados\n por 100.000 habitantes") +
+  labs(x = "Ano", y = "agravos neglicenciados\n por 100.000 habitantes") +
   theme_light()
-```
 
-```{r}
 ggplot(banco) +
-  aes(x = Ano, y = agravo_indicador*100000) +
+  aes(x = ano, y = agravo_indicador) +
   geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
   stat_summary(
     fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
   ) +
   coord_cartesian(ylim=c(0, 200))+
-  labs(x = "Ano", y = "Indicador de agravos neglicenciados\n por 100.000 habitantes") +
+  labs(x = "Ano", y = "agravos neglicenciados\n por 100.000 habitantes") +
   theme_light()
 ```
 
 ```{r}
-banco %>%
-  na.omit() %>% 
-  group_by(Ano) %>% 
-  summarise(média = mean(agravo_indicador*100000),
-            `desvio padrão` = sd(agravo_indicador*100000),
-            máximo = max(agravo_indicador*100000),
-            `1_quartil` = quantile(agravo_indicador*100000, .25),
-            mediana = median(agravo_indicador*100000),
-            `3_quartil` = quantile(agravo_indicador*100000, .75),
-            assimetria = skewness(agravo_indicador*100000),
-            curtose = kurtosis(agravo_indicador*100000)) 
+quadro(agravo_indicador) 
 ```
 
 ```{r}
-banco %>%
-  na.omit(agravo_indicador) %>% 
-  group_by(Uf) %>% 
-  summarise(`Média de agravo` = mean(agravo_indicador*100000)) %>% 
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(agravo_indicador)) %>% 
   arrange(desc(`Média de agravo`)) %>% 
   head(10) %>% 
-  kable(caption = "10 UFs com maior média de agravo por 100.000 habitantes")
+  kable(caption = "10 UFs com maior média de agravos por 100.000 habitantes", col.names = c("UF", "Média Agravo"))
 ```
 
+## Alimentação saudável
 
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = alimentacao_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "alimentação saudável\n por 100.000 habitantes") +
+  theme_light()
+```
 
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = alimentacao_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 1500))+
+  labs(x = "Ano", y = "alimentação saudável\n por 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(alimentacao_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de alimentacao` = mean(alimentacao_indicador)) %>% 
+  arrange(desc(`Média de alimentacao`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de alimentacao por 100.000 habitantes", col.names = c("UF", "Média alimentacao"))
+```
+
+## Autocuidado de pessoas com doenças
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = autocuidado_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "ações de autocuidado \n por 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = autocuidado_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 800))+
+  labs(x = "Ano", y = "Ações de autocuidado \n por 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(autocuidado_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(autocuidado_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de ações de autocuidado por 100.000 habitantes", col.names = c("UF", "Média Autocuidado"))
+```
+
+## Ações de combate ao Aedes aegypt
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = acoes_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de combate ao Aedes Aegypt \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = acoes_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 600))+
+  labs(x = "Ano", y = "Ações de combate ao Aedes Aegypt \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(acoes_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(acoes_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de combate ao Aedes Aegypt por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Cidadania e direitos humanos
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = cidadania_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de Cidadania \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = cidadania_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 200))+
+  labs(x = "Ano", y = "Ações de Cidadania \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(cidadania_indicador) 
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(cidadania_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de Cidadania por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Dependência química / tabaco
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = dependencia_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações contra dependência química \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = dependencia_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 350))+
+  labs(x = "Ano", y = "Ações contra dependência química \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(dependencia_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(dependencia_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações contra dependência química por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Envelhecimento / Climatério
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = envelhecimento_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações contra Envelhecimento \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = envelhecimento_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 100))+
+  labs(x = "Ano", y = "Ações contra Envelhecimento \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(envelhecimento_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(envelhecimento_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações contra Envelhecimento por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Plantas medicinais / fitoterapia
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = plantas_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de Fitoterapia \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = plantas_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 20))+
+  labs(x = "Ano", y = "Ações de Fitoterapia \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(plantas_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(plantas_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de Fitoterapia por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Prevenção da violência
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = prevencao_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de prevenção da violência \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = prevencao_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 250))+
+  labs(x = "Ano", y = "Ações de prevenção da violência \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(prevencao_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(prevencao_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de prevenção da violência por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Saúde ambiental
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = ambiental_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de Saúde Ambiental \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = ambiental_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 160))+
+  labs(x = "Ano", y = "Ações de Saúde Ambiental \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(ambiental_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(ambiental_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de Saúde Ambiental por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Saúde bucal
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = bucal_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de saúde bucal \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = bucal_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 1700))+
+  labs(x = "Ano", y = "Ações de saúde bucal \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(bucal_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(bucal_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de saúde bucal por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Saúde do trabalhador
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = trabalhador_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de saúde do trabalhador \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = trabalhador_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 120))+
+  labs(x = "Ano", y = "Ações de saúde do trabalhador \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(trabalhador_indicador) 
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(trabalhador_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de saúde do trabalhador por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Saúde mental
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = mental_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "Ações de saúde mental \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = mental_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 800))+
+  labs(x = "Ano", y = "Ações de saúde mental \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(mental_indicador) 
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(mental_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de Ações de saúde mental por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Saúde sexual e reprodutiva
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = sexual_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "ações de saúde sexual e reprodutiva \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = sexual_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 450))+
+  labs(x = "Ano", y = "ações de saúde sexual e reprodutiva \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(sexual_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(sexual_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de ações de saúde sexual e reprodutiva por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
+
+## Semana saúde na escola
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = semana_saude_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  )+
+  labs(x = "Ano", y = "ações de Semana Saúde \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+ggplot(banco) +
+  aes(x = ano, y = semana_saude_indicador) +
+  geom_boxplot(fill = c("dark blue"), width = 0.5, outlier.shape = NA) +
+  stat_summary(
+    fun = "mean", geom = "point", shape = 23, size = 3, fill = "white"
+  ) +
+  coord_cartesian(ylim=c(0, 600))+
+  labs(x = "Ano", y = "ações de Semana Saúde \npor 100.000 habitantes") +
+  theme_light()
+```
+
+```{r}
+quadro(semana_saude_indicador)
+```
+
+```{r}
+banco %>% 
+  group_by(uf) %>% 
+  summarise(`Média de agravo` = mean(semana_saude_indicador)) %>% 
+  arrange(desc(`Média de agravo`)) %>% 
+  head(10) %>% 
+  kable(caption = "10 UFs com maior média de ações de Semana Saúde por 100.000 habitantes", col.names = c("UF", "Média Ações"))
+```
