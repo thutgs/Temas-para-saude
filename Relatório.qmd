@@ -12,7 +12,13 @@ library(pacman)
 p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments, glue)
 ```
 
+
+
 ```{r}
+temas <- read_excel("Temas para Saúde.xlsx", sheet = 1)
+anos_1 <- read_excel("Temas para Saúde.xlsx", sheet = 2)
+anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
+=======
 banco <- read_rds("dados/temas.rds")
 indicadores <- read_rds("dados/indicadores.rds")
 ```
@@ -444,6 +450,7 @@ ggplot(banco) +
 quadro(bucal_indicador)
 ```
 
+
 ```{r}
 banco %>% 
   group_by(uf) %>% 
@@ -604,3 +611,4 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de ações de Semana Saúde por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
