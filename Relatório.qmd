@@ -33,7 +33,20 @@ quadro <- function(x){
 }
 ```
 
+# Introdução
+
+Esse relatório tem como objetivo analisar atividades coletivas em temas para a saúde na Atenção Básica, especificamente temas da carteira de serviços das UBSs de 2013 a 2023. As atividades contempladas nesses estudo foram: Agravos negligenciados; Alimentação saudável; Autocuidado de pessoas com doenças crônicas; Ações de combate ao Aedes aegypti ; Cidadania e direitos humanos; Dependência química/tabaco/álcool/outras drogas; Envelhecimento/Climatério/Andropausa/etc; Plantas medicinas/fitoterapia; Prevenção da violência e promoção da cultura da paz; Saúde ambiental; Saúde bucal; Saúde do trabalhador; Saúde mental; Saúde sexual e reprodutiva e Semana saúde na escola.
+
+
+Os dados foram coletados a partir da base de dados do Sistema de Informações em Saúde para a Atenção Básica (SISAB), de acesso público e dados anônimos. O banco contém informações sobre a UF, código do IBGE do município, nome do município, ano da atividade e quantidade de cada atividade por ano.
+
+
+Para a realização das análises, foi utilizado o software R, versão 4.2.0. Este software é amplamente reconhecido na comunidade estatística por suas capacidades de manipulação e visualização de dados, além de fornecer uma ampla gama de pacotes para análises estatísticas avançadas. A utilização do R garantiu a precisão e a eficácia na execução das análises propostas, assim como na geração de gráficos e relatórios visuais que complementam os resultados obtidos.
+
+
+
 # Análise Exploratória e descritiva
+
 
 ## Agravos negligenciados
 
@@ -73,6 +86,8 @@ banco %>%
   kable(caption = "10 UFs com maior média de agravos por 100.000 habitantes", col.names = c("UF", "Média Agravo"))
 ```
 
+A partir do primeiro gráfico, percebemos que a média fica próxima a zero ao longo dos anos, se observarmos a tabela de medidas resumos, percebemos que ela aumenta a cada ano, chegando a 53,83 em 2023. Observando os outliers, vê-se que passam de 1000, aumentando a cada ano, variabilidade percebida através do aumento dos valores de desvio padrão. Podemos observar que a partir de 2020, ano de início da pandemia de covid-19, os valores dos quartis tendem a diminuir, mostrando a influência desse evento nas atividade em questão, voltando a aumentar em 2022. Também vemos que a assimetria se mantém à direita e a curtose tem valores acima de 263 a partir de 2017, com excessão de 2018 e 2018, o que indica uma curva platicúrtica que indica que os dados são menos concentrados ao redor da média e há uma maior presença de valores discrepantes. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é o Amazonas, seguido de Alagoas, ambos com valores muito altos em comparação com outras UFs, sendo a maioria das regiões Norte e Nordeste.
+
 ## Alimentação saudável
 
 ```{r}
@@ -111,6 +126,8 @@ banco %>%
   kable(caption = "10 UFs com maior média de alimentacao por 100.000 habitantes", col.names = c("UF", "Média alimentacao"))
 ```
 
+A partir do primeiro gráfico, percebemos que a média fica próxima a zero, sendo maior de 2016 a 2019, dados observado no segundo gráfico e na tabela de medidas resumo, percebendo que ela cai em 2020 e volta a subir no ano seguinte. Observando os outliers, vê-se que passam de 5000, aumentando a cada ano, variabilidade percebida através do aumento dos valores de desvio padrão e valores de máximo discrepantes. Também vemos que a assimetria se mantém alta e à direita e a curva da curtose é leptocúrtica  em todos anos. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é Alagoas, seguido de Minas Gerais, ambos com valores muito altos em comparação com outras UFs, sendo a maioria das regiões Norte e Nordeste, com uma UF da região Sul presente.
+
 ## Autocuidado de pessoas com doenças
 
 ```{r}
@@ -123,6 +140,8 @@ ggplot(banco) +
   labs(x = "Ano", y = "ações de autocuidado \n por 100.000 habitantes") +
   theme_light()
 ```
+
+
 
 ```{r}
 ggplot(banco) +
@@ -148,6 +167,8 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de ações de autocuidado por 100.000 habitantes", col.names = c("UF", "Média Autocuidado"))
 ```
+
+A partir do primeiro gráfico, percebemos que a média fica próxima a zero, mas ao observarmos a tabela de medidas resumos, percebemos que ela aumenta a cada ano, chegando a 358,156 em 2023.  Observando os outliers, vê-se que passam de 5000, aumentando a cada ano, variabilidade percebida através do aumento dos valores de desvio padrão e valores de máximo discrepantes. Pode-se observar que os valores de máximo são discrepantes, chegando a 23614, 61 em 2019. É interessante observar que para essa atividade, há muitos valores zerados no primeiro quartil, indicando que 25% dos dados de 2013 a 2016 e em 2020 e 2021 apresentam valor igual a 0. Também vemos que a assimetria se mantém alta e à direita. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é Minas Gerais, seguido de Santa Catarina e Goiás, sendo todas regiões brasileiras alcançadas no top 10 UFs com maior média.
 
 ## Ações de combate ao Aedes aegypt
 
@@ -186,6 +207,7 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de Ações de combate ao Aedes Aegypt por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+A partir do segundo gráfico, percebemos que a média fica próxima a zero até 2016, com grande salto em 2017 e diminuição em 2020, ano de início da pandemia de covid-19, apresentando leve aumento da média a partir desse ano. Observando os outliers, vê-se que passam de 5000, em 2016, com um ponto muito distante nesse ano, variabilidade observada nos altos valores do desvio padrão a partir de 2016, chegando a 511, 037 em 2017. Também vemos que a assimetria se mantém alta e à direita e a curtose tem curva  platicúrtica que indica que os dados são menos concentrados ao redor da média e há uma maior presença de valores discrepantes. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é Alagoas, seguido do Rio Grande do Sul e Amazonas, sendo a maioria das regiões Norte e Nordeste.
 
 ## Cidadania e direitos humanos
 
@@ -225,6 +247,8 @@ banco %>%
   kable(caption = "10 UFs com maior média de Ações de Cidadania por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+A partir do segundo gráfico, percebemos que a média fica próxima a zero até 2016, com grande salto em 2017 e diminuição em 2020, ano de início da pandemia de covid-19, apresentando leve aumento da média a partir desse ano. Observando os outliers, vê-se que passam de 5000, em 2016, com um ponto muito distante nesse ano, variabilidade observada nos altos valores do desvio padrão a partir de 2016, chegando a 511, 037 em 2017. É interessante observar que em todos anos 25% dos dados são zerados e se mantém baixos até metade da distribuição dos dados. Também vemos que a assimetria se mantém alta e à direita e a curtose tem curva platicúrtica que indica que os dados são menos concentrados ao redor da média e há uma maior presença de valores discrepantes. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é Amazonas, seguido de Minas Gerais e Alagoas, sendo a maioria das regiões Norte e Nordeste.
+
 ## Dependência química / tabaco
 
 ```{r}
@@ -262,6 +286,8 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de Ações contra dependência química por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
+A partir do segundo gráfico, percebemos que a média fica próxima a zero até 2016, com grande salto em 2017 e diminuição em 2020, ano de início da pandemia de covid-19, apresentando leve aumento da média a partir desse ano. Observando os outliers, vê-se que passam de 2000, com pontos muito distantes a partir de 2017, variabilidade observada nos altos valores do desvio padrão chegando a 223, 906 em 2018. É interessante observar que em todos os anos 25% dos dados são zerados e se mantém baixos até metade da distribuição dos dados. Também vemos que a assimetria se mantém alta e à direita. A partir da segunda tabela, vemos que a UF com maior média de agravos negligenciados é Minas Gerais, seguido do Rio Grande do Sul, com UFs de todas as regiões brasileiras presentes no top 10.
 
 ## Envelhecimento / Climatério
 
@@ -339,6 +365,10 @@ banco %>%
   kable(caption = "10 UFs com maior média de Ações de Fitoterapia por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+A variável "Plantas Medicinais e Fitoterapia" apresentou um crescimento significativo na média, de 0,11 em 2013 para 25,77 em 2023, refletindo uma expansão nas atividades. O desvio padrão aumentou consideravelmente, principalmente em 2023 (349,83), indicando maior variabilidade. 
+
+Os valores máximos variaram bastante, com picos expressivos como 26.361,00 em 2013 e 24.006,53 em 2023, sugerindo ações de grande magnitude em anos específicos. A assimetria e curtose elevadas indicam uma distribuição desigual, com presença de outliers, especialmente em anos recentes. A mediana de zero nos primeiros anos indica um início modesto, mas a tendência crescente após 2020 reflete um aumento no interesse e nas práticas de fitoterapia.
+
 ## Prevenção da violência
 
 ```{r}
@@ -376,6 +406,10 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de Ações de prevenção da violência por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
+A variável "Prevenção da Violência" mostrou um crescimento na média, passando de 12,13 em 2013 para 106,17 em 2023, refletindo uma ampliação nas ações de prevenção ao longo dos anos. O desvio padrão também aumentou, indicando maior variabilidade, especialmente em 2023, com 359,59.  
+Os valores máximos tiveram grandes variações, com picos de até 8641,98 em 2018 e 16153,21 em 2023, sugerindo que, em certos anos, houve um número elevado de ações de prevenção. A assimetria e curtose indicam que a distribuição de dados é desigual, com a presença de valores extremos que afetam a interpretação da variável, especialmente no aumento acentuado da ação em anos recentes.
+
 
 ## Saúde ambiental
 
@@ -415,6 +449,10 @@ banco %>%
   kable(caption = "10 UFs com maior média de Ações de Saúde Ambiental por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+A média das atividades de saúde ambiental cresceu de 4,41 em 2013 para 41,28 em 2019, com uma diminuição em 2020 (15,09) devido à pandemia, mas com recuperação até 58,07 em 2023. A variabilidade aumentou, com um desvio padrão alto em 2023 (281,06) e máximos elevados, como 44745,15 em 2016 e 16194,84 em 2023.  
+Os quartis indicaram um aumento gradual nas atividades ao longo dos anos, com uma recuperação após a queda em 2020. A assimetria e curtose indicam uma grande presença de valores extremos e outliers, sugerindo desigualdade na distribuição e variações significativas nas ações de saúde ambiental.
+
+
 ## Saúde bucal
 
 ```{r}
@@ -452,6 +490,10 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de Ações de saúde bucal por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
+A média das atividades de saúde bucal aumentou de 76,02 em 2013 para 650,27 em 2019, com uma queda em 2020 (104,43) devido à pandemia, mas voltando a crescer até 557,13 em 2023. A variabilidade foi alta, com desvios padrões elevados, como 1355,71 em 2023, e máximos elevados, como 34005,98 em 2016 e 31217,30 em 2023.  
+Os quartis mostraram um aumento constante na execução das atividades, com uma recuperação a partir de 2020. A assimetria e a curtose indicam forte presença de valores extremos, com outliers significativos, refletindo desigualdades nas ações e variações regionais ao longo dos anos.
+
 
 ## Saúde do trabalhador
 
@@ -491,6 +533,11 @@ banco %>%
   kable(caption = "10 UFs com maior média de Ações de saúde do trabalhador por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+A média das atividades de saúde do trabalhador cresceu de 1,49 em 2013 para 80,11 em 2019, com queda em 2020 (42,55) devido à pandemia. Após recuperação gradual, a média atingiu 92,81 em 2023, com alta variabilidade refletida no desvio padrão de 632,17 e máximos elevados, como 27187,92 em 2023.
+Os quartis indicam baixa execução até 2016, com aumento significativo a partir de 2017. Contudo, o primeiro quartil permaneceu zerado em anos como 2020 e 2022, apontando disparidades na cobertura.
+A assimetria e a curtose elevadas ao longo dos anos evidenciam concentração de valores baixos e presença de outliers, indicando desigualdades regionais significativas nas ações realizadas.
+
+
 ## Saúde mental
 
 ```{r}
@@ -528,6 +575,10 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de Ações de saúde mental por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
+A média das atividades cresceu de 5,16 em 2013 para 290,96 em 2019, com queda em 2020 (80,63) devido à pandemia e recuperação até 294,18 em 2023. A variabilidade aumentou, com máximos elevados como 41062,36 em 2022, refletindo desigualdades regionais.  
+Os quartis mostram aumento das atividades até 2019, interrupção em 2020 e retomada até 2023. A assimetria e a curtose altas indicam concentração de valores baixos e a presença de outliers, destacando disparidades persistentes.  
+
 
 ## Saúde sexual e reprodutiva
 
@@ -567,6 +618,10 @@ banco %>%
   kable(caption = "10 UFs com maior média de ações de saúde sexual e reprodutiva por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+A média das atividades aumentou de 12,57 em 2013 para 156,79 em 2019, com queda acentuada em 2020 (41,65) devido à pandemia, seguida de recuperação até 129,16 em 2023. A variabilidade cresceu ao longo dos anos, com máximos elevados, como 7171,85 em 2023, refletindo disparidades regionais.  
+Os quartis mostram aumento consistente das atividades até 2019, mas interrupções em 2020 (1º quartil zerado). A assimetria e a curtose altas indicam concentração de valores baixos e presença de outliers, destacando desigualdades persistentes mesmo com a retomada das ações.  
+
+
 ## Semana saúde na escola
 
 ```{r}
@@ -604,3 +659,7 @@ banco %>%
   head(10) %>% 
   kable(caption = "10 UFs com maior média de ações de Semana Saúde por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
+
+A partir do gráfico e das medidas resumo, observa-se que a média das atividades cresceu de 80,86 em 2013 para 219,30 em 2018, com queda acentuada em 2020 (12,05) devido à pandemia de COVID-19. A recuperação começou em 2021, atingindo 137,99 em 2023. A variabilidade aumentou ao longo dos anos, com valores máximos que chegaram a 30659,23 em 2023 e desvio padrão elevado (548,57).
+ Os quartis mostram que, em 2020 e 2021, 25% das observações foram zeradas, evidenciando o impacto da pandemia. A assimetria permaneceu alta e positiva, com curtose elevada, indicando presença de outliers significativos. Apesar da recuperação recente, há disparidades regionais, refletidas na grande amplitude dos valores máximos.
+

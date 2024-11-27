@@ -1,3 +1,6 @@
+library(pacman)
+p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments, glue)
+
 temas <- read_excel("dados/Temas_inicial.xlsx", sheet = 1)
 anos <- read_excel("dados/Anos.xlsx")
 
@@ -53,7 +56,7 @@ banco <- banco %>%
   mutate_at(c(22:36), ~(round(.,4)))
 indicadores <- select(banco, c(1:4, 21:36))
 
-abas <- list("sheet1" = temas_atualizado, "sheet2" = indicadores)
+abas <- list("sheet1" = banco, "sheet2" = indicadores)
 write.xlsx (abas, "dados/temas_para_saude.xlsx")
 
 write_rds(banco, "dados/temas.rds")
