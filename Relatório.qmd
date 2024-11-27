@@ -12,7 +12,13 @@ library(pacman)
 p_load(readxl, openxlsx, tidyverse, dplyr, reshape2, kableExtra, moments, glue)
 ```
 
+
+
 ```{r}
+temas <- read_excel("Temas para Saúde.xlsx", sheet = 1)
+anos_1 <- read_excel("Temas para Saúde.xlsx", sheet = 2)
+anos_2 <- read_excel("Temas para Saúde.xlsx", sheet = 3)
+=======
 banco <- read_rds("dados/temas.rds")
 indicadores <- read_rds("dados/indicadores.rds")
 ```
@@ -482,6 +488,7 @@ ggplot(banco) +
 quadro(bucal_indicador)
 ```
 
+
 ```{r}
 banco %>% 
   group_by(uf) %>% 
@@ -660,6 +667,9 @@ banco %>%
   kable(caption = "10 UFs com maior média de ações de Semana Saúde por 100.000 habitantes", col.names = c("UF", "Média Ações"))
 ```
 
+<<<<<<< HEAD
 A partir do gráfico e das medidas resumo, observa-se que a média das atividades cresceu de 80,86 em 2013 para 219,30 em 2018, com queda acentuada em 2020 (12,05) devido à pandemia de COVID-19. A recuperação começou em 2021, atingindo 137,99 em 2023. A variabilidade aumentou ao longo dos anos, com valores máximos que chegaram a 30659,23 em 2023 e desvio padrão elevado (548,57).
  Os quartis mostram que, em 2020 e 2021, 25% das observações foram zeradas, evidenciando o impacto da pandemia. A assimetria permaneceu alta e positiva, com curtose elevada, indicando presença de outliers significativos. Apesar da recuperação recente, há disparidades regionais, refletidas na grande amplitude dos valores máximos.
 
+=======
+>>>>>>> 90947dc3ecfeb8cd2d24f1ce55928190366b772a
